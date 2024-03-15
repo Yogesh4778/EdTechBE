@@ -187,7 +187,7 @@ export const UpadteAccessToken = ChacheError(async (req: Request, res: Response,
         const sessions = await redis.get(decode.id as string);
 
         if (!sessions) {
-            return next(new ErrorHandling("Please login to access this website", 400));
+            return next(new ErrorHandling("Please login to access this website(user.controller.ts)", 400));
         }
 
         const user = JSON.parse(sessions);
@@ -207,10 +207,11 @@ export const UpadteAccessToken = ChacheError(async (req: Request, res: Response,
 
         await redis.set(user._id,JSON.stringify(user),"EX",604800); // 7 day login expire
 
-        res.status(200).json({
-            status: "success",
-            accessToken,
-        })
+        // res.status(200).json({
+        //     status: "success",
+        //     accessToken,
+        // })
+        next();
 
     } catch (error: any) {
         return next(new ErrorHandling(error.message, 400));
@@ -255,24 +256,17 @@ export const SocialAuth = ChacheError(async (req: Request, res: Response, next: 
     }
 });
 
+//update user Info
 interface IUpdateUser {
-    name: string;
-    email: string;
+    name?: string;
+    email?: string;
 }
 
 export const UpdateUserInfo = ChacheError(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { name, email } = req.body as IUpdateUser;
-        const userId = req.user?.id || "";
+        const { name} = req.body as IUpdateUser;
+        const userId = req.user?._id || "";
         const user = await userModel.findById(userId);
-
-        if (email && user) {
-            const isEmailExist = await userModel.findOne({ email });
-            if (isEmailExist) {
-                return next(new ErrorHandling("Email is already exist", 400));
-            }
-            user.email = email;
-        }
 
         if (name && user) {
             user.name = name;
@@ -307,7 +301,7 @@ export const UpdatePassword = ChacheError(async (req: Request, res: Response, ne
 
         }
 
-        const user = await userModel.findById(req.user?.id).select("+password");
+        const user = await userModel.findById(req.user?._id).select("+password");
 
         if (user?.password === undefined) {
             return next(new ErrorHandling("Invalid user", 400));
@@ -343,7 +337,7 @@ interface IUpdateProfile {
 export const UpdateProfile = ChacheError(async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        const { avatar } = req.body as IUpdateProfile;
+        const { avatar } = req.body;
         const userid = req.user?._id;
 
         const user = await userModel.findById(userid);
