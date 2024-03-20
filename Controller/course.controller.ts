@@ -42,8 +42,14 @@ export const UploadCourse = ChacheError(async (req: Request, res: Response, next
 export const EditCourse = ChacheError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const data = req.body;
+
         const thumbnail = data.thumbnail;
-        if (thumbnail) {
+
+        const courseId = req.params.id;
+
+        const courseData = await courseModel.findById(courseId) as any;
+
+        if (thumbnail && !thumbnail.startsWith("https")) {
             await cloudinary.v2.uploader.destroy(thumbnail.public_id);
 
             const myCloud = await cloudinary.v2.uploader.upload(thumbnail, {
@@ -51,11 +57,17 @@ export const EditCourse = ChacheError(async (req: Request, res: Response, next: 
             });
             data.thumbnail = {
                 public_id: myCloud.public_id,
-                url: myCloud.secure_url
+                url: myCloud.secure_url,
             }
         }
 
-        const courseId = req.params.id;
+        if(thumbnail.startsWith("https")){
+            data.thumbnail = {
+                public_id: courseData?.thumbnail.public_id,
+                url: courseData?.thumbnail.url, 
+            };
+        }
+
         const course = await courseModel.findByIdAndUpdate(courseId, { $set: data }, { new: true });
 
         res.status(201).json({
@@ -405,7 +417,7 @@ export const AddReviewreply = ChacheError(async (Req: Request, Res: Response, ne
 
 //get all course -- for admin only
 
-export const getAllCourses = ChacheError(async (res: Response, req: Request, next: NextFunction) => {
+export const getAdminCourses = ChacheError(async (res: Response, req: Request, next: NextFunction) => {
     try {
         getAllCourseService(res);
     } catch (error: any) {
