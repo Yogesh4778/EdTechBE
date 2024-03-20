@@ -46,8 +46,8 @@ export const sendToken = (user: Iuser, statuscode: number, res: Response) => {
     if (process.env.NODE_ENV === 'production') {
         accessTokenOption.secure = true;
     }
-    res.cookie("access_Token", accessToken, accessTokenOption);
-    res.cookie("refresh_ Token", refreshToken, refreshTokenOption);
+    res.cookie("access_token", accessToken, accessTokenOption);
+    res.cookie("refresh_token", refreshToken, refreshTokenOption);
 
     res.status(statuscode).json({
         success: true,

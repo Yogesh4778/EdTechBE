@@ -105,24 +105,25 @@ export const getSingleCourse = ChacheError(async (req: Request, res: Response, n
 export const getAllCourse = ChacheError(async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        const isCacheExist = await redis.get("allcourses");
+        // const isCacheExist = await redis.get("allcourses");
 
-        if (isCacheExist) {
-            const course = JSON.parse(isCacheExist);
+        // if (isCacheExist) {
+        //     const course = JSON.parse(isCacheExist);
 
-            res.status(201).json({
-                success: true,
-                course
-            })
-        } else {
+        //     res.status(201).json({
+        //         success: true,
+        //         course
+        //     })
+        // }
+        //  else {
             const course = await courseModel.find().select("-courseData.videoUrl -courseData.suggestions -courseData.questions -courseData.links")
-            await redis.set("allcourses", JSON.stringify(course));
+            // await redis.set("allcourses", JSON.stringify(course));
             res.status(201).json({
                 success: true,
                 course
             })
         }
-    } catch (error: any) {
+     catch (error: any) {
         return next(new ErrorHandling(error.message, 500));
     }
 
